@@ -10,6 +10,11 @@ export default function UserManagement() {
     const [showUnprofiled, setShowUnprofiled] = useState(false)
     const [error, setError] = useState(null)
 
+    const [selectedUser, setSelectedUser] = useState(null)
+    const [billingHistory, setBillingHistory] = useState([])
+    const [isBillingModalOpen, setIsBillingModalOpen] = useState(false)
+    const [billingLoading, setBillingLoading] = useState(false)
+
     const fetchUsers = async () => {
         setLoading(true)
         setError(null)
@@ -31,12 +36,101 @@ export default function UserManagement() {
             .rpc('get_unprofiled_users')
 
         if (unprofiledData) setUnprofiledUsers(unprofiledData)
-        if (unprofiledError) {
-            console.error('Error fetching unprofiled users:', unprofiledError)
-            // Don't set global error if only RPC fails (might be permission issue during dev)
-        }
 
         setLoading(false)
+    }
+
+    const fetchBillingHistory = async (userId) => {
+        setBillingLoading(true)
+        const { data, error } = await supabase
+            .from('billing_history')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+
+        if (!error) setBillingHistory(data || [])
+        setBillingLoading(false)
+    }
+
+    const openBillingModal = (user) => {
+        setSelectedUser(user)
+        fetchBillingHistory(user.user_id)
+        setIsBillingModalOpen(true)
+    }
+
+    const updateBillingField = async (field, value) => {
+        if (!selectedUser) return
+        setIsUpdating(true)
+
+        const { error } = await supabase
+            .from('user_profiles')
+            .update({ [field]: value })
+            .eq('user_id', selectedUser.user_id)
+
+        if (!error) {
+            setSelectedUser({ ...selectedUser, [field]: value })
+            fetchUsers()
+        }
+        setIsUpdating(false)
+    }
+
+    const manualAction = async (type, plan = 'one_time') => {
+        if (!selectedUser) return
+        const notes = window.prompt(`Enter notes for this ${type} action:`, `Manual ${type} by admin`)
+        if (notes === null) return
+
+        setIsUpdating(true)
+        const now = new Date().toISOString()
+
+        let profileUpdate = {}
+        let historyStatus = 'completed'
+
+        if (type === 'activate') {
+            profileUpdate = {
+                is_paid: true,
+                plan_type: plan,
+                paid_at: now,
+                subscription_status: plan === 'one_time' ? null : 'active'
+            }
+            if (plan !== 'one_time') {
+                const days = plan === 'monthly' ? 30 : (plan === 'biannual' ? 183 : 365)
+                profileUpdate.subscription_next_billing = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+            }
+        } else if (type === 'revoke') {
+            profileUpdate = {
+                is_paid: false,
+                subscription_status: 'revoked',
+                subscription_next_billing: null
+            }
+            historyStatus = 'revoked'
+        }
+
+        // 1. Update Profile
+        const { error: pError } = await supabase
+            .from('user_profiles')
+            .update(profileUpdate)
+            .eq('user_id', selectedUser.user_id)
+
+        if (pError) {
+            alert('Failed to update profile: ' + pError.message)
+            setIsUpdating(false)
+            return
+        }
+
+        // 2. Log History
+        await supabase.from('billing_history').insert({
+            user_id: selectedUser.user_id,
+            plan_type: plan,
+            amount: 0,
+            status: historyStatus,
+            type: type === 'activate' ? 'manual_activation' : 'revoke',
+            notes: notes
+        })
+
+        setSelectedUser({ ...selectedUser, ...profileUpdate })
+        fetchUsers()
+        fetchBillingHistory(selectedUser.user_id)
+        setIsUpdating(false)
     }
 
     useEffect(() => {
@@ -229,20 +323,20 @@ export default function UserManagement() {
                                                 ) : (
                                                     <>
                                                         <button
+                                                            className="btn-small btn-success-subtle"
+                                                            onClick={() => openBillingModal(user)}
+                                                            disabled={isUpdating}
+                                                            title="Advanced Billing Management"
+                                                        >
+                                                            Billing
+                                                        </button>
+                                                        <button
                                                             className="btn-small"
                                                             onClick={() => extendTrial(user.user_id, user.trial_start)}
                                                             disabled={isUpdating}
                                                             title="Add 48 hours to trial start"
                                                         >
                                                             +48h
-                                                        </button>
-                                                        <button
-                                                            className="btn-small"
-                                                            onClick={() => resetTrial(user.user_id)}
-                                                            disabled={isUpdating}
-                                                            title="Reset to fresh 48h trial"
-                                                        >
-                                                            Reset
                                                         </button>
                                                         <button
                                                             className={`btn-small ${user.is_paid ? 'btn-danger' : 'btn-success'}`}
@@ -269,8 +363,148 @@ export default function UserManagement() {
                 )}
             </div>
 
+            {/* Billing Modal */}
+            {isBillingModalOpen && selectedUser && (
+                <div className="modal-overlay" onClick={() => setIsBillingModalOpen(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '95%' }}>
+                        <button className="modal-close" onClick={() => setIsBillingModalOpen(false)}>×</button>
+                        <div className="modal-title">Billing Management</div>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '24px' }}>
+                            Managing billing for <strong>{selectedUser.email}</strong>
+                        </p>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '32px' }}>
+                            <div className="glass-panel p-16" style={{ background: 'rgba(255, 255, 255, 0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '100px' }}>
+                                <div>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Current Plan</div>
+                                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{selectedUser.plan_type || 'Free/Trial'}</div>
+                                </div>
+                                <div style={{ fontSize: '12px', marginTop: '12px', color: selectedUser.is_paid ? '#34c759' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: selectedUser.is_paid ? '#34c759' : 'currentColor' }}></span>
+                                    {selectedUser.is_paid ? 'Active' : 'Inactive'}
+                                </div>
+                            </div>
+                            <div className="glass-panel p-16" style={{ background: 'rgba(255, 255, 255, 0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '100px' }}>
+                                <div>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Next Billing</div>
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            type="date"
+                                            value={selectedUser.subscription_next_billing ? selectedUser.subscription_next_billing.split('T')[0] : ''}
+                                            onChange={(e) => updateBillingField('subscription_next_billing', e.target.value ? new Date(e.target.value).toISOString() : null)}
+                                            style={{
+                                                background: 'rgba(255, 255, 255, 0.05)',
+                                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                color: '#fff',
+                                                padding: '6px 10px',
+                                                borderRadius: '8px',
+                                                fontSize: '14px',
+                                                width: '100%',
+                                                outline: 'none',
+                                                fontFamily: 'inherit'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: '12px', marginTop: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.2)' }}></span>
+                                    Billing Cycle
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ marginBottom: '32px' }}>
+                            <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Manual Actions</div>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                <button className="btn-small btn-success" onClick={() => manualAction('activate', 'one_time')}>Activate Lifetime</button>
+                                <button className="btn-small btn-success" onClick={() => manualAction('activate', 'monthly')}>Activate Monthly</button>
+                                <button className="btn-small btn-danger" onClick={() => manualAction('revoke')}>Revoke Access</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                                <span>Billing History</span>
+                                {billingLoading && <span style={{ fontSize: '11px', fontWeight: 400, opacity: 0.6 }}>Loading...</span>}
+                            </div>
+                            <div style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
+                                {billingHistory.length === 0 ? (
+                                    <div style={{ padding: '24px', textAlign: 'center', opacity: 0.4, fontSize: '13px' }}>No history records found.</div>
+                                ) : (
+                                    billingHistory.map(entry => (
+                                        <div key={entry.id} style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                                <span style={{ fontSize: '13px', fontWeight: 600 }}>{entry.type.replace('_', ' ').toUpperCase()}</span>
+                                                <span style={{ fontSize: '11px', opacity: 0.5 }}>{new Date(entry.created_at).toLocaleString()}</span>
+                                            </div>
+                                            <div style={{ fontSize: '12px', opacity: 0.8 }}>Plan: {entry.plan_type} | Status: {entry.status}</div>
+                                            {entry.notes && <div style={{ fontSize: '11px', color: '#f59e0b', marginTop: '4px' }}>"{entry.notes}"</div>}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        <div style={{ marginTop: '32px', textAlign: 'right' }}>
+                            <button className="btn-secondary" onClick={() => setIsBillingModalOpen(false)}>Close Window</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <style dangerouslySetInnerHTML={{
                 __html: `
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.8);
+                    backdrop-filter: blur(8px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                    animation: fadeIn 0.3s ease;
+                }
+                .modal-content {
+                    background: #0f172a;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 24px;
+                    padding: 32px;
+                    position: relative;
+                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                }
+                .modal-close {
+                    position: absolute;
+                    top: 24px;
+                    right: 24px;
+                    background: rgba(255,255,255,0.05);
+                    border: none;
+                    color: #fff;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 20px;
+                }
+                .modal-title {
+                    font-size: 24px;
+                    font-weight: 700;
+                    margin-bottom: 8px;
+                }
+                .btn-success-subtle {
+                    background: rgba(52, 199, 89, 0.1);
+                    color: #34c759;
+                    border: 1px solid rgba(52, 199, 89, 0.2);
+                }
+                .btn-success-subtle:hover {
+                    background: rgba(52, 199, 89, 0.2);
+                }
                 table tr.list-item:hover {
                     background: rgba(255,255,255,0.05) !important;
                     transform: scale(1.005);
