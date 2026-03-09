@@ -59,44 +59,63 @@ export default function SystemControl() {
 
     return (
         <div className="section-container">
-            <div className="stats-grid" style={{ marginBottom: '32px' }}>
+            <div className="stats-grid">
                 <div className="stat-card glass-panel">
                     <span className="stat-icon">{maintenanceMode ? '🚨' : '🛡️'}</span>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-                        <div>
-                            <h3>Maintenance Mode</h3>
-                            <p className="stat-value" style={{ color: maintenanceMode ? 'var(--danger)' : 'var(--success)', fontSize: '24px' }}>
-                                {maintenanceMode ? 'Active' : 'Standby'}
-                            </p>
-                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                                Application kill switch status.
-                            </p>
-                        </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', gap: '8px' }}>
+                        <h3>Maintenance Mode</h3>
                         <button
                             className={`btn-small ${maintenanceMode ? 'btn-danger' : 'btn-outline'}`}
                             onClick={toggleMaintenance}
                             disabled={isUpdating}
-                            style={{ padding: '4px 12px', height: '28px' }}
+                            style={{ padding: '4px 12px', height: '24px', fontSize: '11px', flexShrink: 0 }}
                         >
                             {maintenanceMode ? 'OFF' : 'ON'}
                         </button>
                     </div>
+                    <p className="stat-value" style={{ color: maintenanceMode ? 'var(--danger)' : 'var(--success)' }}>
+                        {maintenanceMode ? 'Active' : 'Standby'}
+                    </p>
+                    <p style={{ color: 'var(--text-muted)' }}>
+                        Application kill switch status.
+                    </p>
                 </div>
 
                 <div className="stat-card glass-panel">
                     <span className="stat-icon">📣</span>
                     <h3>Broadcast System</h3>
-                    <p className="stat-value" style={{ color: '#ff9500', fontSize: '24px' }}>
+                    <p className="stat-value" style={{ color: '#ff9500' }}>
                         {emergencyMessage.trim() ? 'Broadcasting' : 'Idle'}
                     </p>
-                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    <p style={{ color: 'var(--text-muted)' }}>
                         Emergency banner status.
                     </p>
+                </div>
+
+                <div className="stat-card glass-panel">
+                    <span className="stat-icon">🗄️</span>
+                    <h3>Database</h3>
+                    <p className="stat-value" style={{ color: 'var(--success)' }}>Stable</p>
+                    <p style={{ color: 'var(--text-muted)' }}>Connection status.</p>
+                </div>
+
+                <div className="stat-card glass-panel">
+                    <span className="stat-icon">🛡️</span>
+                    <h3>RLS Policies</h3>
+                    <p className="stat-value" style={{ color: 'var(--success)' }}>Active</p>
+                    <p style={{ color: 'var(--text-muted)' }}>Internal security.</p>
+                </div>
+
+                <div className="stat-card glass-panel">
+                    <span className="stat-icon">⚙️</span>
+                    <h3>Cron Jobs</h3>
+                    <p className="stat-value" style={{ color: 'var(--success)' }}>Running</p>
+                    <p style={{ color: 'var(--text-muted)' }}>Background workers.</p>
                 </div>
             </div>
 
             <div className="glass-panel p-24">
-                <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>Emergency Broadcast</h2>
+                <h2 style={{ fontSize: '13px', fontWeight: 800, marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>Emergency Broadcast</h2>
                 <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
                     <div className="form-group">
                         <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>
@@ -129,23 +148,6 @@ export default function SystemControl() {
                 </div>
             </div>
 
-            <div className="glass-panel p-24" style={{ marginTop: '32px' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>System Health</h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
-                    <div style={{ padding: '16px', background: 'rgba(52, 199, 89, 0.05)', borderRadius: '12px', border: '1px solid rgba(52, 199, 89, 0.2)' }}>
-                        <div style={{ fontSize: '12px', color: 'var(--success)', fontWeight: 600, textTransform: 'uppercase' }}>Database Connection</div>
-                        <div style={{ fontSize: '18px', fontWeight: 700, marginTop: '4px' }}>Stable</div>
-                    </div>
-                    <div style={{ padding: '16px', background: 'rgba(52, 199, 89, 0.05)', borderRadius: '12px', border: '1px solid rgba(52, 199, 89, 0.2)' }}>
-                        <div style={{ fontSize: '12px', color: 'var(--success)', fontWeight: 600, textTransform: 'uppercase' }}>RLS Policies</div>
-                        <div style={{ fontSize: '18px', fontWeight: 700, marginTop: '4px' }}>Active</div>
-                    </div>
-                    <div style={{ padding: '16px', background: 'rgba(52, 199, 89, 0.05)', borderRadius: '12px', border: '1px solid rgba(52, 199, 89, 0.2)' }}>
-                        <div style={{ fontSize: '12px', color: 'var(--success)', fontWeight: 600, textTransform: 'uppercase' }}>Cron Jobs</div>
-                        <div style={{ fontSize: '18px', fontWeight: 700, marginTop: '4px' }}>Running</div>
-                    </div>
-                </div>
-            </div>
         </div>
     )
 }

@@ -281,122 +281,188 @@ export default function UserManagement() {
                 )}
 
                 {loading ? <p style={{ color: 'var(--text-muted)' }}>Loading users...</p> : (
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 12px' }}>
-                            <thead>
-                                <tr style={{ textAlign: 'left', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    <th style={{ padding: '0 16px' }}>User</th>
-                                    {!showUnprofiled && <th style={{ padding: '0 16px' }}>Plan & Status</th>}
-                                    <th style={{ padding: '0 16px' }}>{showUnprofiled ? 'Registered At' : 'Trial Info'}</th>
-                                    <th style={{ padding: '0 16px', textAlign: 'right' }}>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {(showUnprofiled ? filteredUnprofiled : filteredUsers).map(user => (
-                                    <tr key={user.user_id || user.id} className="list-item" style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
-                                        <td style={{ padding: '20px 16px', borderRadius: '16px 0 0 16px' }}>
-                                            <div style={{ fontWeight: 600, fontSize: '15px' }}>{user.email}</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>ID: {(user.user_id || user.id).substring(0, 8)}...</div>
-                                        </td>
-                                        {!showUnprofiled && (
-                                            <td style={{ padding: '20px 16px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span className={`status-badge ${user.is_paid ? 'active' : 'inactive'}`}>
-                                                        {user.is_paid ? (user.plan_type || 'Paid') : 'Free/Trial'}
-                                                    </span>
-                                                    {user.subscription_status && (
-                                                        <span style={{ fontSize: '11px', opacity: 0.7 }}>{user.subscription_status}</span>
-                                                    )}
-                                                </div>
-                                                {user.subscription_next_billing && (
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
-                                                        Next: {new Date(user.subscription_next_billing).toLocaleDateString()}
-                                                    </div>
-                                                )}
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="table-responsive hidden-mobile">
+                            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 16px' }}>
+                                <thead>
+                                    <tr style={{ textAlign: 'left', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        <th style={{ padding: '0 16px' }}>User</th>
+                                        {!showUnprofiled && <th style={{ padding: '0 16px' }}>Plan & Status</th>}
+                                        <th style={{ padding: '0 16px' }}>{showUnprofiled ? 'Registered At' : 'Trial Info'}</th>
+                                        <th style={{ padding: '0 16px', textAlign: 'right' }}>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(showUnprofiled ? filteredUnprofiled : filteredUsers).map(user => (
+                                        <tr key={user.user_id || user.id} className="list-item" style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
+                                            <td style={{ padding: '20px 16px', borderRadius: '16px 0 0 16px' }}>
+                                                <div style={{ fontWeight: 600, fontSize: '15px' }}>{user.email}</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>ID: {(user.user_id || user.id).substring(0, 8)}...</div>
                                             </td>
-                                        )}
-                                        <td style={{ padding: '20px 16px' }}>
-                                            {showUnprofiled ? (
-                                                <>
-                                                    <div style={{ fontSize: '14px' }}>{new Date(user.created_at).toLocaleDateString()}</div>
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                                                        Last Sign-in: {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
+                                            {!showUnprofiled && (
+                                                <td style={{ padding: '20px 16px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span className={`status-badge ${user.is_paid ? 'active' : 'inactive'}`}>
+                                                            {user.is_paid ? (user.plan_type || 'Paid') : 'Free/Trial'}
+                                                        </span>
+                                                        {user.subscription_status && (
+                                                            <span style={{ fontSize: '11px', opacity: 0.7 }}>{user.subscription_status}</span>
+                                                        )}
                                                     </div>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div style={{ fontSize: '14px' }}>
-                                                        Started: {user.trial_start ? new Date(user.trial_start).toLocaleDateString() : 'N/A'}
-                                                    </div>
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                                                        {user.trial_start ? (
-                                                            Math.max(0, 48 - Math.floor((new Date() - new Date(user.trial_start)) / (1000 * 60 * 60))) + 'h remaining'
-                                                        ) : 'Trial not started'}
-                                                    </div>
-                                                </>
+                                                    {user.subscription_next_billing && (
+                                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                                                            Next: {new Date(user.subscription_next_billing).toLocaleDateString()}
+                                                        </div>
+                                                    )}
+                                                </td>
                                             )}
-                                        </td>
-                                        <td style={{ padding: '20px 16px', borderRadius: '0 16px 16px 0', textAlign: 'right' }}>
-                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                                            <td style={{ padding: '20px 16px' }}>
                                                 {showUnprofiled ? (
-                                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                                                        <button
-                                                            className="btn-small btn-success-subtle"
-                                                            onClick={() => openBillingModal(user)}
-                                                            disabled={isUpdating}
-                                                            title="Initialize profile and manage billing"
-                                                        >
-                                                            Billing
-                                                        </button>
-                                                        <button
-                                                            className="btn-small btn-success-subtle"
-                                                            onClick={() => initializeProfile(user.id, user.email)}
-                                                            disabled={isUpdating}
-                                                            style={{ width: '100px' }}
-                                                        >
-                                                            Init Profile
-                                                        </button>
-                                                    </div>
+                                                    <>
+                                                        <div style={{ fontSize: '14px' }}>{new Date(user.created_at).toLocaleDateString()}</div>
+                                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                            Last Sign-in: {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
+                                                        </div>
+                                                    </>
                                                 ) : (
                                                     <>
-                                                        <button
-                                                            className="btn-small btn-success-subtle"
-                                                            onClick={() => openBillingModal(user)}
-                                                            disabled={isUpdating}
-                                                            title="Advanced Billing Management"
-                                                        >
-                                                            Billing
-                                                        </button>
-                                                        <button
-                                                            className="btn-small"
-                                                            onClick={() => extendTrial(user.user_id, user.trial_start)}
-                                                            disabled={isUpdating}
-                                                            title="Add 48 hours to trial start"
-                                                        >
-                                                            +48h
-                                                        </button>
-                                                        <button
-                                                            className={`btn-small ${user.is_paid ? 'btn-danger' : 'btn-success'}`}
-                                                            onClick={() => togglePaid(user.user_id, user.is_paid)}
-                                                            disabled={isUpdating}
-                                                            style={{ minWidth: '80px' }}
-                                                        >
-                                                            {user.is_paid ? 'Revoke' : 'Active'}
-                                                        </button>
+                                                        <div style={{ fontSize: '14px' }}>
+                                                            Started: {user.trial_start ? new Date(user.trial_start).toLocaleDateString() : 'N/A'}
+                                                        </div>
+                                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                            {user.trial_start ? (
+                                                                Math.max(0, 48 - Math.floor((new Date() - new Date(user.trial_start)) / (1000 * 60 * 60))) + 'h remaining'
+                                                            ) : 'Trial not started'}
+                                                        </div>
                                                     </>
                                                 )}
+                                            </td>
+                                            <td style={{ padding: '20px 16px', borderRadius: '0 16px 16px 0', textAlign: 'right' }}>
+                                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                                                    {showUnprofiled ? (
+                                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                                            <button
+                                                                className="btn-small btn-success-subtle"
+                                                                onClick={() => openBillingModal(user)}
+                                                                disabled={isUpdating}
+                                                                title="Initialize profile and manage billing"
+                                                            >
+                                                                Billing
+                                                            </button>
+                                                            <button
+                                                                className="btn-small btn-success-subtle"
+                                                                onClick={() => initializeProfile(user.id, user.email)}
+                                                                disabled={isUpdating}
+                                                                style={{ width: '100px' }}
+                                                            >
+                                                                Init Profile
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <button
+                                                                className="btn-small btn-success-subtle"
+                                                                onClick={() => openBillingModal(user)}
+                                                                disabled={isUpdating}
+                                                                title="Advanced Billing Management"
+                                                            >
+                                                                Billing
+                                                            </button>
+                                                            <button
+                                                                className="btn-small"
+                                                                onClick={() => extendTrial(user.user_id, user.trial_start)}
+                                                                disabled={isUpdating}
+                                                                title="Add 48 hours to trial start"
+                                                            >
+                                                                +48h
+                                                            </button>
+                                                            <button
+                                                                className={`btn-small ${user.is_paid ? 'btn-danger' : 'btn-success'}`}
+                                                                onClick={() => togglePaid(user.user_id, user.is_paid)}
+                                                                disabled={isUpdating}
+                                                                style={{ minWidth: '80px' }}
+                                                            >
+                                                                {user.is_paid ? 'Revoke' : 'Active'}
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card List View */}
+                        <div className="mobile-card-list mobile-only">
+                            {(showUnprofiled ? filteredUnprofiled : filteredUsers).map(user => (
+                                <div key={user.user_id || user.id} className="glass-panel" style={{ padding: '20px', background: 'rgba(255,255,255,0.03)' }}>
+                                    <div style={{ marginBottom: '16px' }}>
+                                        <div style={{ fontWeight: 700, fontSize: '16px', color: '#fff' }}>{user.email}</div>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>ID: {(user.user_id || user.id).substring(0, 12)}...</div>
+                                    </div>
+
+                                    {!showUnprofiled && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }}>
+                                            <div>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Plan & Status</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                                    <span className={`status-badge ${user.is_paid ? 'active' : 'inactive'}`} style={{ padding: '2px 8px' }}>
+                                                        {user.is_paid ? (user.plan_type || 'Paid') : 'Free/Trial'}
+                                                    </span>
+                                                    {user.subscription_status && <span style={{ fontSize: '11px', opacity: 0.7 }}>{user.subscription_status}</span>}
+                                                </div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {filteredUsers.length === 0 && (
+                                            <div style={{ textAlign: 'right' }}>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Trial Progress</div>
+                                                <div style={{ fontSize: '13px', marginTop: '4px' }}>
+                                                    {user.trial_start ? Math.max(0, 48 - Math.floor((new Date() - new Date(user.trial_start)) / (1000 * 60 * 60))) + 'h left' : 'N/A'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {showUnprofiled && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }}>
+                                            <div>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Registered At</div>
+                                                <div style={{ fontSize: '13px', marginTop: '4px' }}>{new Date(user.created_at).toLocaleDateString()}</div>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Last Sign-in</div>
+                                                <div style={{ fontSize: '13px', marginTop: '4px' }}>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}</div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        {showUnprofiled ? (
+                                            <>
+                                                <button className="btn-small btn-success-subtle" style={{ flex: 1 }} onClick={() => openBillingModal(user)}>Billing</button>
+                                                <button className="btn-small btn-success-subtle" style={{ flex: 1 }} onClick={() => initializeProfile(user.id, user.email)}>Init Profile</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button className="btn-small btn-success-subtle" style={{ flex: 1 }} onClick={() => openBillingModal(user)}>Billing</button>
+                                                <button className="btn-small" style={{ flex: 1 }} onClick={() => extendTrial(user.user_id, user.trial_start)}>+48h</button>
+                                                <button className={`btn-small ${user.is_paid ? 'btn-danger' : 'btn-success'}`} style={{ flex: 1 }} onClick={() => togglePaid(user.user_id, user.is_paid)}>
+                                                    {user.is_paid ? 'Revoke' : 'Active'}
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {(showUnprofiled ? filteredUnprofiled : filteredUsers).length === 0 && (
                             <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                                 No users found matching "{searchTerm}"
                             </div>
                         )}
-                    </div>
+                    </>
                 )}
             </div>
 
@@ -405,85 +471,71 @@ export default function UserManagement() {
                 <div className="modal-overlay" onClick={() => setIsBillingModalOpen(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '95%' }}>
                         <button className="modal-close" onClick={() => setIsBillingModalOpen(false)}>×</button>
-                        <div className="modal-title">Billing Management</div>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '24px' }}>
+                        <div className="modal-title" style={{ fontSize: '20px', marginBottom: '4px' }}>Billing Management</div>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '20px' }}>
                             Managing billing for <strong>{selectedUser.email}</strong>
                         </p>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '32px' }}>
-                            <div className="glass-panel p-16" style={{ background: 'rgba(255, 255, 255, 0.03)', display: 'flex', flexDirection: 'column', height: '110px' }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Current Plan</div>
-                                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{selectedUser.plan_type || 'Free/Trial'}</div>
-                                </div>
-                                <div style={{ fontSize: '12px', color: selectedUser.is_paid ? '#34c759' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+                            <div className="glass-panel" style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Current Plan</div>
+                                <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>{selectedUser.plan_type || 'Free/Trial'}</div>
+                                <div style={{ fontSize: '11px', color: selectedUser.is_paid ? '#34c759' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: 'auto' }}>
                                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: selectedUser.is_paid ? '#34c759' : 'currentColor' }}></span>
                                     {selectedUser.is_paid ? 'Active' : 'Inactive'}
                                 </div>
                             </div>
-                            <div className="glass-panel p-16" style={{ background: 'rgba(255, 255, 255, 0.03)', display: 'flex', flexDirection: 'column', height: '110px' }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Next Billing</div>
-                                    <div style={{ position: 'relative' }}>
-                                        <input
-                                            type="date"
-                                            value={selectedUser.subscription_next_billing ? selectedUser.subscription_next_billing.split('T')[0] : ''}
-                                            onChange={(e) => updateBillingField('subscription_next_billing', e.target.value ? new Date(e.target.value).toISOString() : null)}
-                                            style={{
-                                                background: 'rgba(255, 255, 255, 0.05)',
-                                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                                color: '#fff',
-                                                padding: '4px 8px',
-                                                borderRadius: '8px',
-                                                fontSize: '14px',
-                                                width: '100%',
-                                                outline: 'none',
-                                                fontFamily: 'inherit'
-                                            }}
-                                        />
-                                    </div>
+                            <div className="glass-panel" style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Next Billing</div>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type="date"
+                                        className="premium-date-input"
+                                        value={selectedUser.subscription_next_billing ? selectedUser.subscription_next_billing.split('T')[0] : ''}
+                                        onChange={(e) => updateBillingField('subscription_next_billing', e.target.value ? new Date(e.target.value).toISOString() : null)}
+                                    />
                                 </div>
-                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: 'auto' }}>
                                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.2)' }}></span>
                                     Billing Cycle
                                 </div>
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: '32px' }}>
-                            <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Manual Actions</div>
+                        <div style={{ marginBottom: '24px' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: '12px' }}>Manual Actions</div>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                <button className="btn-small btn-success" onClick={() => manualAction('activate', 'one_time')}>Activate Lifetime</button>
-                                <button className="btn-small btn-success" onClick={() => manualAction('activate', 'monthly')}>Activate Monthly</button>
-                                <button className="btn-small btn-danger" onClick={() => manualAction('revoke')}>Revoke Access</button>
+                                <button className="btn-small btn-success" style={{ height: '36px', padding: '0 16px' }} onClick={() => manualAction('activate', 'one_time')}>Activate Lifetime</button>
+                                <button className="btn-small btn-success" style={{ height: '36px', padding: '0 16px' }} onClick={() => manualAction('activate', 'monthly')}>Activate Monthly</button>
+                                <button className="btn-small btn-danger" style={{ height: '36px', padding: '0 16px' }} onClick={() => manualAction('revoke')}>Revoke Access</button>
                             </div>
                         </div>
 
                         <div>
-                            <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
                                 <span>Billing History</span>
-                                {billingLoading && <span style={{ fontSize: '11px', fontWeight: 400, opacity: 0.6 }}>Loading...</span>}
+                                {billingLoading && <span style={{ fontSize: '10px', fontWeight: 400, opacity: 0.6 }}>Loading...</span>}
                             </div>
-                            <div style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
+                            <div style={{ maxHeight: '180px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
                                 {billingHistory.length === 0 ? (
-                                    <div style={{ padding: '24px', textAlign: 'center', opacity: 0.4, fontSize: '13px' }}>No history records found.</div>
+                                    <div style={{ padding: '20px', textAlign: 'center', opacity: 0.4, fontSize: '12px' }}>No history records found.</div>
                                 ) : (
                                     billingHistory.map(entry => (
-                                        <div key={entry.id} style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                                <span style={{ fontSize: '13px', fontWeight: 600 }}>{entry.type.replace('_', ' ').toUpperCase()}</span>
-                                                <span style={{ fontSize: '11px', opacity: 0.5 }}>{new Date(entry.created_at).toLocaleString()}</span>
+                                        <div key={entry.id} style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                                <span style={{ fontSize: '12px', fontWeight: 600 }}>{entry.type.replace('_', ' ').toUpperCase()}</span>
+                                                <span style={{ fontSize: '10px', opacity: 0.5 }}>{new Date(entry.created_at).toLocaleDateString()}</span>
                                             </div>
-                                            <div style={{ fontSize: '12px', opacity: 0.8 }}>Plan: {entry.plan_type} | Status: {entry.status}</div>
-                                            {entry.notes && <div style={{ fontSize: '11px', color: '#f59e0b', marginTop: '4px' }}>"{entry.notes}"</div>}
+                                            <div style={{ fontSize: '11px', opacity: 0.7 }}>Plan: {entry.plan_type} | Status: {entry.status}</div>
+                                            {entry.notes && <div style={{ fontSize: '10px', color: '#f59e0b', marginTop: '2px' }}>"{entry.notes}"</div>}
                                         </div>
                                     ))
                                 )}
                             </div>
                         </div>
 
-                        <div style={{ marginTop: '32px', textAlign: 'right' }}>
-                            <button className="btn-secondary" onClick={() => setIsBillingModalOpen(false)}>Close Window</button>
+                        <div style={{ marginTop: '24px', textAlign: 'right' }}>
+                            <button className="btn-secondary" style={{ height: '36px', fontSize: '13px' }} onClick={() => setIsBillingModalOpen(false)}>Close Window</button>
                         </div>
                     </div>
                 </div>
@@ -491,6 +543,29 @@ export default function UserManagement() {
 
             <style dangerouslySetInnerHTML={{
                 __html: `
+                .premium-date-input {
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    color: #fff;
+                    padding: 8px 12px;
+                    border-radius: 10px;
+                    font-size: 13px;
+                    width: 100%;
+                    outline: none;
+                    font-family: inherit;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .premium-date-input:focus {
+                    background: rgba(255, 255, 255, 0.08);
+                    border-color: var(--primary);
+                    box-shadow: 0 0 0 4px rgba(88, 86, 214, 0.1);
+                }
+                .premium-date-input::-webkit-calendar-picker-indicator {
+                    filter: invert(1);
+                    opacity: 0.5;
+                    cursor: pointer;
+                }
                 .modal-overlay {
                     position: fixed;
                     top: 0;
@@ -502,16 +577,15 @@ export default function UserManagement() {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    z-index: 1000;
                     animation: fadeIn 0.3s ease;
                 }
                 .modal-content {
-                    background: #0f172a;
+                    background: radial-gradient(circle at 50% 0%, #1c1c1e 0%, #000000 100%) !important;
                     border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 24px;
+                    border-radius: 28px;
                     padding: 32px;
                     position: relative;
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
                 }
                 .modal-close {
                     position: absolute;

@@ -19,7 +19,9 @@ function App() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      checkSession(initialSession).then(() => setLoading(false))
+      checkSession(initialSession).then(() => {
+        setLoading(false)
+      })
     })
 
     const {

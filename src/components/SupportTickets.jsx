@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import CustomSelect from './CustomSelect'
 
 export default function SupportTickets() {
     const [tickets, setTickets] = useState([])
@@ -132,26 +133,27 @@ export default function SupportTickets() {
                         <h2 style={{ fontSize: '24px', fontWeight: 800, marginTop: '4px' }}>Feedback & Issues</h2>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                        <select
+                    <div className="header-actions" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: '100%', maxWidth: 'none' }}>
+                        <CustomSelect
                             className="input-select"
-                            style={{ width: 'auto', minWidth: '150px', padding: '10px 16px', height: '42px' }}
+                            style={{ flex: '1 1 150px', height: '42px' }}
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                        >
-                            <option value="all">All Tickets</option>
-                            <option value="open">Open</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="resolved">Resolved</option>
-                        </select>
+                            options={[
+                                { value: 'all', label: 'All Tickets' },
+                                { value: 'open', label: 'Open' },
+                                { value: 'in_progress', label: 'In Progress' },
+                                { value: 'resolved', label: 'Resolved' }
+                            ]}
+                        />
 
-                        <div style={{ position: 'relative', width: '250px' }}>
+                        <div style={{ position: 'relative', flex: '1 1 250px' }}>
                             <input
                                 type="text"
                                 placeholder="Search email, subject, body..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ paddingRight: '40px', height: '42px', padding: '10px 16px' }}
+                                style={{ paddingRight: '40px', height: '42px', padding: '10px 16px', width: '100%' }}
                             />
                             <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
                         </div>

@@ -11,7 +11,11 @@ export default function Dashboard({ session }) {
     const [activeAnnouncementsCount, setActiveAnnouncementsCount] = useState(0)
     const [totalUsersCount, setTotalUsersCount] = useState(0)
     const [pendingSupportCount, setPendingSupportCount] = useState(0)
-    const [activeTab, setActiveTab] = useState('announcements') // 'announcements' | 'users' | 'system' | 'security' | 'analytics' | 'support'
+    const [activeTab, setActiveTab] = useState('announcements')
+    const [isSidenavOpen, setIsSidenavOpen] = useState(false)
+
+    const toggleSidenav = () => setIsSidenavOpen(!isSidenavOpen)
+    const closeSidenav = () => setIsSidenavOpen(false)
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
@@ -59,9 +63,10 @@ export default function Dashboard({ session }) {
     return (
         <div className="dashboard-wrapper">
             <nav className="navbar glass-panel">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '32px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                    <div className="nav-brand">TUBA Admin</div>
-                    <div className="tabs-container" style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, overflow: 'hidden' }}>
+                    <button className="menu-toggle" onClick={toggleSidenav}>☰</button>
+                    <div className="nav-brand">Admin Panel</div>
+                    <div className="tabs-container" style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px', flex: 1 }}>
                         <button
                             className={`tab-btn ${activeTab === 'announcements' ? 'active' : ''}`}
                             onClick={() => setActiveTab('announcements')}
@@ -69,14 +74,16 @@ export default function Dashboard({ session }) {
                                 background: activeTab === 'announcements' ? 'var(--primary-gradient)' : 'transparent',
                                 color: activeTab === 'announcements' ? 'white' : 'var(--text-muted)',
                                 padding: '8px 16px',
-                                fontSize: '14px',
+                                fontSize: '13px',
                                 borderRadius: '10px',
-                                display: 'flex', alignItems: 'center', gap: '6px'
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
                             }}
                         >
                             Announcements
                             {activeAnnouncementsCount > 0 && (
-                                <span style={{ background: 'var(--danger)', color: 'white', padding: '2px 6px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold' }}>
+                                <span style={{ background: 'var(--danger)', color: 'white', padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold' }}>
                                     {activeAnnouncementsCount}
                                 </span>
                             )}
@@ -88,8 +95,10 @@ export default function Dashboard({ session }) {
                                 background: activeTab === 'users' ? 'var(--primary-gradient)' : 'transparent',
                                 color: activeTab === 'users' ? 'white' : 'var(--text-muted)',
                                 padding: '8px 16px',
-                                fontSize: '14px',
-                                borderRadius: '10px'
+                                fontSize: '13px',
+                                borderRadius: '10px',
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
                             }}
                         >
                             Users
@@ -101,11 +110,13 @@ export default function Dashboard({ session }) {
                                 background: activeTab === 'system' ? 'var(--primary-gradient)' : 'transparent',
                                 color: activeTab === 'system' ? 'white' : 'var(--text-muted)',
                                 padding: '8px 16px',
-                                fontSize: '14px',
-                                borderRadius: '10px'
+                                fontSize: '13px',
+                                borderRadius: '10px',
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
                             }}
                         >
-                            System Control
+                            System
                         </button>
                         <button
                             className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
@@ -114,8 +125,10 @@ export default function Dashboard({ session }) {
                                 background: activeTab === 'analytics' ? 'var(--primary-gradient)' : 'transparent',
                                 color: activeTab === 'analytics' ? 'white' : 'var(--text-muted)',
                                 padding: '8px 16px',
-                                fontSize: '14px',
-                                borderRadius: '10px'
+                                fontSize: '13px',
+                                borderRadius: '10px',
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
                             }}
                         >
                             Analytics
@@ -127,11 +140,13 @@ export default function Dashboard({ session }) {
                                 background: activeTab === 'security' ? 'var(--primary-gradient)' : 'transparent',
                                 color: activeTab === 'security' ? 'white' : 'var(--text-muted)',
                                 padding: '8px 16px',
-                                fontSize: '14px',
-                                borderRadius: '10px'
+                                fontSize: '13px',
+                                borderRadius: '10px',
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
                             }}
                         >
-                            Security Log
+                            Security
                         </button>
                         <button
                             className={`tab-btn ${activeTab === 'support' ? 'active' : ''}`}
@@ -140,14 +155,16 @@ export default function Dashboard({ session }) {
                                 background: activeTab === 'support' ? 'var(--primary-gradient)' : 'transparent',
                                 color: activeTab === 'support' ? 'white' : 'var(--text-muted)',
                                 padding: '8px 16px',
-                                fontSize: '14px',
+                                fontSize: '13px',
                                 borderRadius: '10px',
-                                display: 'flex', alignItems: 'center', gap: '6px'
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
                             }}
                         >
                             Support
                             {pendingSupportCount > 0 && (
-                                <span style={{ background: '#ff9500', color: 'white', padding: '2px 6px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold' }}>
+                                <span style={{ background: '#ff9500', color: 'white', padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold' }}>
                                     {pendingSupportCount}
                                 </span>
                             )}
@@ -155,22 +172,14 @@ export default function Dashboard({ session }) {
                     </div>
                 </div>
                 <div className="nav-actions">
-                    <span className="user-email">{session?.user?.email}</span>
-                    <button onClick={handleLogout} className="btn-outline">Logout</button>
+                    <span className="user-email hidden-mobile">{session?.user?.email}</span>
+                    <button onClick={handleLogout} className="btn-outline" style={{ fontSize: '13px', padding: '8px 16px' }}>Logout</button>
                 </div>
             </nav>
 
             <main className="main-content">
                 <header className="page-header">
                     <h1>{activeTab === 'announcements' ? 'Announcements' : activeTab === 'users' ? 'User Management' : activeTab === 'security' ? 'Security & Audit' : activeTab === 'analytics' ? 'Platform Analytics' : activeTab === 'support' ? 'User Support' : 'System Control'}</h1>
-                    <p>
-                        {activeTab === 'announcements' ? 'Manage global application announcements.' :
-                            activeTab === 'users' ? 'Monitor and manage user profiles and subscriptions.' :
-                                activeTab === 'security' ? 'Review access logs, suspicious activities, and policy overrides.' :
-                                    activeTab === 'analytics' ? 'Overview of signups, MRR, and platform health.' :
-                                        activeTab === 'support' ? 'Manage user feedback, bug reports, and support tickets.' :
-                                            'Global application overrides and health monitoring.'}
-                    </p>
                 </header>
 
                 <div className="stats-grid">
@@ -184,18 +193,14 @@ export default function Dashboard({ session }) {
                     <div className="stat-card glass-panel">
                         <span className="stat-icon">⚡</span>
                         <h3>System Status</h3>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                            <p className="stat-value" style={{ color: 'var(--success)' }}>Operational</p>
-                        </div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginTop: '4px' }}>Real-time health: OK</span>
+                        <p className="stat-value" style={{ color: 'var(--success)' }}>Operational</p>
+                        <span style={{ color: 'var(--text-muted)' }}>Real-time health: OK</span>
                     </div>
                     <div className="stat-card glass-panel">
                         <span className="stat-icon">🗄️</span>
                         <h3>Database</h3>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                            <p className="stat-value" style={{ color: '#ff9500' }}>Connected</p>
-                        </div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginTop: '4px' }}>Supabase Cloud</span>
+                        <p className="stat-value" style={{ color: '#ff9500' }}>Connected</p>
+                        <span style={{ color: 'var(--text-muted)' }}>Supabase Cloud</span>
                     </div>
                 </div>
 
@@ -206,6 +211,38 @@ export default function Dashboard({ session }) {
                                 activeTab === 'support' ? <SupportTickets /> :
                                     <SystemControl />}
             </main>
+
+            <div className={`sidenav-overlay ${isSidenavOpen ? 'active' : ''}`} onClick={closeSidenav}></div>
+            <div className={`mobile-sidenav ${isSidenavOpen ? 'active' : ''}`}>
+                <div className="sidenav-header">
+                    <div className="sidenav-logo">Admin Panel</div>
+                    <button onClick={closeSidenav} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>×</button>
+                </div>
+                <div className="sidenav-links">
+                    <button className={`sidenav-link ${activeTab === 'announcements' ? 'active' : ''}`} onClick={() => { setActiveTab('announcements'); closeSidenav(); }}>
+                        📢 Announcements {activeAnnouncementsCount > 0 && <span className="badge">{activeAnnouncementsCount}</span>}
+                    </button>
+                    <button className={`sidenav-link ${activeTab === 'users' ? 'active' : ''}`} onClick={() => { setActiveTab('users'); closeSidenav(); }}>
+                        👥 User Management
+                    </button>
+                    <button className={`sidenav-link ${activeTab === 'system' ? 'active' : ''}`} onClick={() => { setActiveTab('system'); closeSidenav(); }}>
+                        ⚙️ System Control
+                    </button>
+                    <button className={`sidenav-link ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => { setActiveTab('analytics'); closeSidenav(); }}>
+                        📊 Platform Analytics
+                    </button>
+                    <button className={`sidenav-link ${activeTab === 'security' ? 'active' : ''}`} onClick={() => { setActiveTab('security'); closeSidenav(); }}>
+                        🔐 Security & Audit
+                    </button>
+                    <button className={`sidenav-link ${activeTab === 'support' ? 'active' : ''}`} onClick={() => { setActiveTab('support'); closeSidenav(); }}>
+                        🎧 User Support {pendingSupportCount > 0 && <span className="badge" style={{ background: '#ff9500' }}>{pendingSupportCount}</span>}
+                    </button>
+                </div>
+                <div style={{ marginTop: 'auto', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>{session?.user?.email}</div>
+                    <button onClick={handleLogout} className="btn-outline" style={{ width: '100%', padding: '12px' }}>Logout</button>
+                </div>
+            </div>
 
             <style dangerouslySetInnerHTML={{
                 __html: `
