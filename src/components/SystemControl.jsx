@@ -4,8 +4,22 @@ import { supabase } from '../supabaseClient'
 export default function SystemControl() {
     const [maintenanceMode, setMaintenanceMode] = useState(false)
     const [emergencyMessage, setEmergencyMessage] = useState('')
+    const [lastSavedMessage, setLastSavedMessage] = useState('')
     const [loading, setLoading] = useState(true)
     const [isUpdating, setIsUpdating] = useState(false)
+    const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: '', onConfirm: null })
+
+    // Scroll lock when confirm modal is open
+    useEffect(() => {
+        if (confirmModal.show) {
+            document.body.classList.add('no-scroll');
+        } else {
+            // Only remove if no other modals are open
+            // (Assuming this is the only modal in this component)
+            document.body.classList.remove('no-scroll');
+        }
+        return () => document.body.classList.remove('no-scroll');
+    }, [confirmModal.show]);
 
     const fetchConfig = async () => {
         setLoading(true)
@@ -17,7 +31,11 @@ export default function SystemControl() {
             const maintenance = data.find(c => c.key === 'maintenance_mode')
             const emergency = data.find(c => c.key === 'emergency_message')
             if (maintenance) setMaintenanceMode(maintenance.value === true)
-            if (emergency) setEmergencyMessage(emergency.value || '')
+            if (emergency) {
+                const val = emergency.value || ''
+                setEmergencyMessage(val)
+                setLastSavedMessage(val)
+            }
         }
         setLoading(false)
     }
@@ -40,6 +58,7 @@ export default function SystemControl() {
         if (error) {
             alert('Error updating config: ' + error.message)
         } else {
+            setLastSavedMessage(value)
             // Dispatch custom event for real-time header update if needed
             window.dispatchEvent(new CustomEvent('config-updated'))
         }
@@ -48,30 +67,85 @@ export default function SystemControl() {
 
     const toggleMaintenance = () => {
         const next = !maintenanceMode
-        if (next && !window.confirm('Are you sure? This will block ALL users from accessing the app immediately.')) return
-        setMaintenanceMode(next)
-        updateConfig('maintenance_mode', next)
+        if (next) {
+            setConfirmModal({
+                show: true,
+                title: 'Activate Maintenance Mode',
+                message: 'Are you sure? This will block ALL users from accessing the application immediately.',
+                onConfirm: () => {
+                    setMaintenanceMode(true)
+                    updateConfig('maintenance_mode', true)
+                    setConfirmModal({ ...confirmModal, show: false })
+                }
+            })
+        } else {
+            setMaintenanceMode(false)
+            updateConfig('maintenance_mode', false)
+        }
+    }
+
+    const broadcastTemplates = [
+        { label: '🛠️ Scheduled', text: 'Planned maintenance in progress. System will be back shortly.' },
+        { label: '💳 Billing', text: 'Billing system is currently being updated. Recent payments may take longer to process.' },
+        { label: '⚡ Performance', text: 'We are investigating intermittent system slowness. Thanks for your patience.' },
+        { label: '🗄️ Database', text: 'Database optimization in progress. Expect minor interruptions.' },
+        { label: '🚨 Emergency', text: 'Technical issues detected. Our team is working to resolve them immediately.' },
+    ]
+
+    const handleTemplateSelect = (text) => {
+        setEmergencyMessage(text)
     }
 
     const saveEmergencyMessage = () => {
         updateConfig('emergency_message', emergencyMessage)
     }
 
+    const handleUnpublish = () => {
+        setEmergencyMessage('')
+        updateConfig('emergency_message', '')
+    }
+
+    const isActuallyPublished = lastSavedMessage.trim() !== ''
+    const isMessageModified = emergencyMessage !== lastSavedMessage
+    const showUnpublish = isActuallyPublished && !isMessageModified
+
     return (
         <div className="section-container">
+            {/* Confirmation Modal */}
+            {confirmModal.show && (
+                <div className="confirm-modal-overlay" onClick={() => setConfirmModal({ ...confirmModal, show: false })}>
+                    <div className="confirm-modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="confirm-modal-icon">🚨</div>
+                        <h3>{confirmModal.title}</h3>
+                        <p>{confirmModal.message}</p>
+                        <div className="confirm-modal-actions">
+                            <button className="btn-confirm-cancel" onClick={() => setConfirmModal({ ...confirmModal, show: false })}>
+                                Cancel
+                            </button>
+                            <button className="btn-confirm-danger" onClick={confirmModal.onConfirm}>
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="stats-grid">
                 <div className="stat-card glass-panel">
-                    <span className="stat-icon">{maintenanceMode ? '🚨' : '🛡️'}</span>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', gap: '8px' }}>
                         <h3>Maintenance Mode</h3>
-                        <button
-                            className={`btn-small ${maintenanceMode ? 'btn-danger' : 'btn-outline'}`}
-                            onClick={toggleMaintenance}
-                            disabled={isUpdating}
-                            style={{ padding: '4px 12px', height: '24px', fontSize: '11px', flexShrink: 0 }}
-                        >
-                            {maintenanceMode ? 'OFF' : 'ON'}
-                        </button>
+                        <label className={`ios-toggle ${isUpdating ? 'disabled' : ''}`} style={{ marginRight: '4px' }}>
+                            <input
+                                type="checkbox"
+                                checked={maintenanceMode}
+                                onChange={toggleMaintenance}
+                                disabled={isUpdating}
+                            />
+                            <span className="ios-slider">
+                                <span className="toggle-on">ON</span>
+                                <span className="toggle-off">OFF</span>
+                            </span>
+                        </label>
                     </div>
                     <p className="stat-value" style={{ color: maintenanceMode ? 'var(--danger)' : 'var(--success)' }}>
                         {maintenanceMode ? 'Active' : 'Standby'}
@@ -85,7 +159,7 @@ export default function SystemControl() {
                     <span className="stat-icon">📣</span>
                     <h3>Broadcast System</h3>
                     <p className="stat-value" style={{ color: '#ff9500' }}>
-                        {emergencyMessage.trim() ? 'Broadcasting' : 'Idle'}
+                        {lastSavedMessage.trim() ? 'Broadcasting' : 'Idle'}
                     </p>
                     <p style={{ color: 'var(--text-muted)' }}>
                         Emergency banner status.
@@ -117,14 +191,47 @@ export default function SystemControl() {
             <div className="glass-panel p-24">
                 <h2 style={{ fontSize: '13px', fontWeight: 800, marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>Emergency Broadcast</h2>
                 <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
+                    <div className="form-group" style={{ marginBottom: '8px' }}>
+                        <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '12px', display: 'block' }}>
+                            Quick Templates
+                        </label>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {broadcastTemplates.map((template, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleTemplateSelect(template.text)}
+                                    style={{
+                                        padding: '6px 14px',
+                                        fontSize: '12px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '20px',
+                                        color: 'white',
+                                        fontWeight: 500,
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = 'rgba(255,255,255,0.1)';
+                                        e.target.style.borderColor = 'var(--primary)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = 'rgba(255,255,255,0.05)';
+                                        e.target.style.borderColor = 'rgba(255,255,255,0.1)';
+                                    }}
+                                >
+                                    {template.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     <div className="form-group">
                         <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>
-                            Banner Message (Leave empty to clear)
+                            Banner Message (Live editing)
                         </label>
                         <textarea
                             value={emergencyMessage}
                             onChange={(e) => setEmergencyMessage(e.target.value)}
-                            placeholder="e.g. System upgrade in progress. Expect intermittent downtime."
+                            placeholder="Select a template or type custom message..."
                             style={{
                                 width: '100%',
                                 minHeight: '100px',
@@ -133,18 +240,27 @@ export default function SystemControl() {
                                 borderRadius: '12px',
                                 color: 'white',
                                 padding: '16px',
-                                fontSize: '15px'
+                                fontSize: '15px',
+                                transition: 'border-color 0.2s'
                             }}
                         />
                     </div>
-                    <button
-                        className="btn-primary"
-                        onClick={saveEmergencyMessage}
-                        disabled={isUpdating}
-                        style={{ alignSelf: 'flex-start' }}
-                    >
-                        {isUpdating ? 'Updating...' : 'Update Banner'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <button
+                            className={`${showUnpublish ? 'btn-danger' : 'btn-primary'}`}
+                            onClick={showUnpublish ? handleUnpublish : saveEmergencyMessage}
+                            disabled={isUpdating}
+                            style={{
+                                minWidth: '120px',
+                                background: showUnpublish ? '#ff3b30' : 'var(--primary-gradient)',
+                                color: '#ffffff',
+                                fontWeight: 'bold',
+                                boxShadow: showUnpublish ? '0 8px 16px rgba(255, 59, 48, 0.2)' : '0 8px 16px rgba(88, 86, 214, 0.2)'
+                            }}
+                        >
+                            {isUpdating ? 'Wait...' : (showUnpublish ? 'Unpublish' : 'Publish')}
+                        </button>
+                    </div>
                 </div>
             </div>
 

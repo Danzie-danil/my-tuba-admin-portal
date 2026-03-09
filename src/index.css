@@ -38,6 +38,10 @@ body {
   overflow-x: hidden;
 }
 
+.no-scroll {
+  overflow: hidden !important;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -1054,4 +1058,334 @@ button:active {
   font-size: 15px;
   color: white;
   word-break: break-all;
+}
+
+/* --- Rich Text Editor (Quill) Premium Styling --- */
+.quill-wrapper {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.quill-wrapper:focus-within {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 4px rgba(88, 86, 214, 0.1);
+}
+
+.ql-toolbar.ql-snow {
+  border: none !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 8px 12px !important;
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ql-container.ql-snow {
+  border: none !important;
+  font-family: inherit !important;
+  font-size: 15px !important;
+  color: #fff !important;
+  min-height: 120px;
+  max-height: 300px;
+  overflow-y: auto !important;
+}
+
+.ql-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ql-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.ql-editor {
+  padding: 16px 18px !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: rgba(255, 255, 255, 0.3) !important;
+  font-style: normal !important;
+  left: 18px !important;
+  right: 18px !important;
+}
+
+/* Toolbar Icon Colors */
+.ql-snow .ql-stroke {
+  stroke: rgba(255, 255, 255, 0.7) !important;
+}
+
+.ql-snow .ql-fill {
+  fill: rgba(255, 255, 255, 0.7) !important;
+}
+
+.ql-snow .ql-picker {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke {
+  stroke: var(--primary) !important;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-fill {
+  fill: var(--primary) !important;
+}
+
+.ql-snow.ql-toolbar .ql-picker-label:hover,
+.ql-snow.ql-toolbar .ql-picker-label.ql-active {
+  color: var(--primary) !important;
+}
+
+/* Dropdowns/Pickers */
+.ql-snow .ql-picker-options {
+  background-color: #1c1c1e !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  z-index: 2000;
+}
+
+.ql-snow .ql-picker-item:hover {
+  color: var(--primary) !important;
+}
+
+/* Rendering content safely with proper formatting */
+.item-msg.ql-viewer {
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 0 !important;
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.item-msg.ql-viewer::-webkit-scrollbar {
+  width: 4px;
+}
+
+.item-msg.ql-viewer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.item-msg.ql-viewer>*:last-child {
+  margin-bottom: 0;
+}
+
+.item-msg.ql-viewer ul,
+.item-msg.ql-viewer ol {
+  padding-left: 1.5em !important;
+  margin: 0.5em 0 !important;
+}
+
+.item-msg.ql-viewer ul {
+  list-style-type: disc !important;
+}
+
+.item-msg.ql-viewer ol {
+  list-style-type: decimal !important;
+}
+
+.item-msg.ql-viewer p {
+  margin-bottom: 0.5em;
+}
+
+/* Fix for alignment in viewer */
+.ql-viewer .ql-align-center {
+  text-align: center;
+}
+
+.ql-viewer .ql-align-right {
+  text-align: right;
+}
+
+.ql-viewer .ql-align-justify {
+  text-align: justify;
+}
+
+/* Refresh Button Styles */
+.refresh-btn {
+  border-radius: 12px !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  margin-right: 8px;
+}
+
+.refresh-btn:hover .refresh-icon {
+  transform: rotate(180deg);
+}
+
+.refresh-icon {
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
+
+/* --- iOS Style Toggle Switch --- */
+.ios-toggle {
+  position: relative;
+  display: inline-block;
+  width: 68px;
+  height: 30px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ios-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ios-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--danger);
+  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ios-slider:before {
+  position: absolute;
+  content: "";
+  height: 24px;
+  width: 24px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.ios-slider .toggle-on {
+  opacity: 0;
+  transition: 0.3s;
+  margin-left: 2px;
+}
+
+.ios-slider .toggle-off {
+  opacity: 1;
+  transition: 0.3s;
+  margin-right: 2px;
+}
+
+input:checked+.ios-slider {
+  background-color: var(--success);
+}
+
+input:checked+.ios-slider:before {
+  transform: translateX(38px);
+}
+
+input:checked+.ios-slider .toggle-on {
+  opacity: 1;
+}
+
+input:checked+.ios-slider .toggle-off {
+  opacity: 0;
+}
+
+.ios-toggle.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- Confirmation Modal (Premium iOS Style) --- */
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  padding: 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+.confirm-modal-content {
+  background: #1c1c1e;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  text-align: center;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.confirm-modal-icon {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+.confirm-modal-content h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: white;
+}
+
+.confirm-modal-content p {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.confirm-modal-actions button {
+  flex: 1;
+  height: 48px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn-confirm-danger {
+  background: #ff3b30;
+  color: white;
+}
+
+.btn-confirm-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.refresh-btn:active .refresh-icon {
+  transform: rotate(360deg);
+  transition: transform 0.2s ease;
 }

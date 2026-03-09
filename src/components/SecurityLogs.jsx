@@ -9,6 +9,16 @@ export default function SecurityLogs() {
     const [eventTypeFilter, setEventTypeFilter] = useState('all') // 'all', 'login', 'failed_login', etc.
     const [selectedLog, setSelectedLog] = useState(null)
 
+    // Scroll lock when modal is open
+    useEffect(() => {
+        if (selectedLog) {
+            document.body.classList.add('no-scroll');
+        } else {
+            document.body.classList.remove('no-scroll');
+        }
+        return () => document.body.classList.remove('no-scroll');
+    }, [selectedLog]);
+
     const fetchLogs = async () => {
         setLoading(true)
         let query = supabase

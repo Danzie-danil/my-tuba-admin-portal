@@ -4,6 +4,13 @@ import CustomSelect from './CustomSelect'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 
+const getDefaultExpiry = () => {
+    const date = new Date()
+    date.setDate(date.getDate() + 3)
+    // Format for datetime-local: YYYY-MM-DDTHH:MM
+    return date.toISOString().slice(0, 16)
+}
+
 export default function Announcements() {
     const [announcements, setAnnouncements] = useState([])
     const [loading, setLoading] = useState(true)
@@ -12,7 +19,7 @@ export default function Announcements() {
     const [title, setTitle] = useState('')
     const [message, setMessage] = useState('')
     const [priority, setPriority] = useState(0)
-    const [expiresAt, setExpiresAt] = useState('')
+    const [expiresAt, setExpiresAt] = useState(getDefaultExpiry())
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [editingId, setEditingId] = useState(null)
     const [isFormExpanded, setIsFormExpanded] = useState(false)
@@ -79,7 +86,7 @@ export default function Announcements() {
         setTitle('')
         setMessage('')
         setPriority(0)
-        setExpiresAt('')
+        setExpiresAt(getDefaultExpiry())
         setEditingId(null)
     }
 
@@ -260,15 +267,13 @@ export default function Announcements() {
                                     <input type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className="input-date" />
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '12px' }}>
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
                                 <button type="submit" disabled={isSubmitting} className="btn-success" style={{ flex: 2 }}>
                                     {isSubmitting ? 'Saving...' : editingId ? 'Update Announcement' : 'Publish Announcement'}
                                 </button>
-                                {editingId && (
-                                    <button type="button" onClick={resetForm} className="btn-outline" style={{ flex: 1 }}>
-                                        Cancel
-                                    </button>
-                                )}
+                                <button type="button" onClick={resetForm} className="btn-outline" style={{ flex: 1 }}>
+                                    {editingId ? 'Cancel' : 'Clear All'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -325,8 +330,8 @@ export default function Announcements() {
                                         </span>
                                     </div>
                                     <div
-                                        className="item-msg ql-editor"
-                                        style={{ marginBottom: '16px', padding: 0 }}
+                                        className="item-msg ql-viewer"
+                                        style={{ marginBottom: '16px' }}
                                         dangerouslySetInnerHTML={{ __html: a.message }}
                                     />
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -338,11 +343,21 @@ export default function Announcements() {
                                             <button onClick={() => handleEdit(a)} className="btn-small">
                                                 Edit
                                             </button>
-                                            <button onClick={() => toggleStatus(a.id, a.is_active)} className="btn-small">
-                                                {a.is_active ? 'Off' : 'On'}
+                                            <button onClick={() => toggleStatus(a.id, a.is_active)} className="btn-small" style={{ minWidth: '85px' }}>
+                                                {a.is_active ? 'Deactivate' : 'Activate'}
                                             </button>
-                                            <button onClick={() => handleDelete(a.id)} className="btn-small btn-danger">
-                                                Del
+                                            <button
+                                                onClick={() => handleDelete(a.id)}
+                                                className="btn-small btn-danger"
+                                                style={{
+                                                    background: '#ff3b30',
+                                                    color: '#fff',
+                                                    border: 'none',
+                                                    fontWeight: '600',
+                                                    minWidth: '70px'
+                                                }}
+                                            >
+                                                Delete
                                             </button>
                                         </div>
                                     </div>
