@@ -52,6 +52,11 @@ export default function Dashboard({ session }) {
         if (sCount !== null) setPendingSupportCount(sCount)
     }
 
+    const handleRefresh = () => {
+        // Full page reload to ensure all data across all tabs is fresh
+        window.location.reload()
+    }
+
     useEffect(() => {
         fetchStats()
 
@@ -172,6 +177,10 @@ export default function Dashboard({ session }) {
                     </div>
                 </div>
                 <div className="nav-actions">
+                    <button onClick={handleRefresh} className="btn-outline refresh-btn" style={{ fontSize: '13px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="refresh-icon">↻</span>
+                        <span className="hidden-mobile">Refresh</span>
+                    </button>
                     <span className="user-email hidden-mobile">{session?.user?.email}</span>
                     <button onClick={handleLogout} className="btn-outline" style={{ fontSize: '13px', padding: '8px 16px' }}>Logout</button>
                 </div>
