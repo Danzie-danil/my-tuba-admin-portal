@@ -37,5 +37,9 @@ export default defineConfig({
       }
     })
   ],
-  base: '/admin-portal/',
+  base: '/admin/',
+  build: {
+    outDir: '../admin',
+    emptyOutDir: true
+  }
 })
