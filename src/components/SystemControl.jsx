@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 
 export default function SystemControl() {
@@ -8,6 +8,23 @@ export default function SystemControl() {
     const [loading, setLoading] = useState(true)
     const [isUpdating, setIsUpdating] = useState(false)
     const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: '', onConfirm: null })
+    const broadcastChannelRef = useRef(null)
+    const broadcastReadyRef = useRef(false)
+
+    useEffect(() => {
+        // Broadcast channel to instantly notify connected main-app clients.
+        const ch = supabase.channel('public-admin-events')
+        broadcastChannelRef.current = ch
+        broadcastReadyRef.current = false
+        ch.subscribe((status) => {
+            if (status === 'SUBSCRIBED') broadcastReadyRef.current = true
+        })
+        return () => {
+            try { supabase.removeChannel(ch) } catch { }
+            if (broadcastChannelRef.current === ch) broadcastChannelRef.current = null
+            if (broadcastReadyRef.current) broadcastReadyRef.current = false
+        }
+    }, [])
 
     // Scroll lock when confirm modal is open
     useEffect(() => {
@@ -58,9 +75,28 @@ export default function SystemControl() {
         if (error) {
             alert('Error updating config: ' + error.message)
         } else {
-            setLastSavedMessage(value)
-            // Dispatch custom event for real-time header update if needed
-            window.dispatchEvent(new CustomEvent('config-updated'))
+            // Only track lastSavedMessage for the emergency banner text,
+            // not for boolean flags like maintenance_mode.
+            if (key === 'emergency_message') {
+                const safeValue = typeof value === 'string' ? value : (value ?? '').toString()
+                setLastSavedMessage(safeValue)
+            }
+            // Notify connected clients immediately (no refresh needed).
+            try {
+                const ch = broadcastChannelRef.current
+                if (ch) {
+                    // Ensure the channel is fully subscribed before sending.
+                    const startedAt = Date.now()
+                    while (!broadcastReadyRef.current && Date.now() - startedAt < 3000) {
+                        await new Promise(r => setTimeout(r, 50))
+                    }
+                    await ch.send({
+                        type: 'broadcast',
+                        event: 'config-updated',
+                        payload: { key, value }
+                    })
+                }
+            } catch { }
         }
         setIsUpdating(false)
     }
